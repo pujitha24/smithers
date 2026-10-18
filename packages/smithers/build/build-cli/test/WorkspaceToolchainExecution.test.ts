@@ -74,6 +74,9 @@ export const Package = S.Package({ targets: { check } })
 const fs = require("node:fs")
 const args = process.argv.slice(2)
 fs.appendFileSync(${JSON.stringify(Path.join(root, "manager-invocations.jsonl"))}, JSON.stringify(args) + "\\n")
+if (args.includes("tsc")) fs.appendFileSync(${
+      JSON.stringify(Path.join(root, "manager-store.txt"))
+    }, String(process.env.pnpm_config_store_dir) + "\\n")
 if (args.length === 1 && args[0] === "--version") {
   process.stdout.write("11.25.0\\n")
 } else if (JSON.stringify(args.filter((arg) => arg !== "--config.verifyDepsBeforeRun=false")) === JSON.stringify(["exec", "tsc", "-p", "tsconfig.json", "--noEmit"])) {
@@ -225,6 +228,9 @@ export const Package = S.Package({ targets: { check } })
     expect(invocations.filter((args) => args.includes("tsc"))).toEqual([
       ["--config.verifyDepsBeforeRun=false", "exec", "tsc", "-p", "tsconfig.json", "--noEmit"]
     ])
+    expect((await Fs.readFile(Path.join(root, "manager-store.txt"), "utf8")).trim()).toBe(
+      Path.join(root, ".flows/store/pnpm")
+    )
   })
 })
 

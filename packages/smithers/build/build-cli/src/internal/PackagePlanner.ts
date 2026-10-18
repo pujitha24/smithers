@@ -2688,6 +2688,12 @@ const visit = async (
       (argv[1] === "exec" || argv[1] === "run")
     ) {
       argv = [argv[0]!, "--config.verifyDepsBeforeRun=false", ...argv.slice(1)]
+      // With no store configured pnpm probes the filesystem by writing
+      // `<root>/_tmp_*`, which the confined sandbox refuses. The install flow's
+      // store is where it would resolve to anyway.
+      if (env.pnpm_config_store_dir === undefined) {
+        env = { ...env, pnpm_config_store_dir: NodePath.join(context.root, PackageManager.storeRoot, "pnpm") }
+      }
       if (selection?.family === "service" && selection.rule === "Shell.Serve") {
         selection = { ...selection, argv: [argv[0]!, ...argv.slice(1)] }
       }
